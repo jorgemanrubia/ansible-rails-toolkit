@@ -1,0 +1,8 @@
+- name: Install Git
+  become: true
+  apt: "pkg={{ item }} state=present"
+  update_cache: true
+  with_items:
+   - git
+
+

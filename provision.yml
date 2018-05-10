@@ -1,0 +1,24 @@
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - aws-provisioning
+
+#- hosts: localhost
+#  connection: local
+#  gather_facts: False
+#  name: Refresh inventory
+#  tasks:
+#    - name: Refresh EC2 cache
+#      command: ./environments/production/ec2.py --refresh-cache
+#    - name: Refresh in-memory EC2 cache
+#      meta: refresh_inventory
+
+- hosts: all
+  gather_facts: false
+  pre_tasks:
+    - raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      become: true
+    - setup: # aka gather_facts
+
+- include: configure.yml

@@ -1,0 +1,25 @@
+Eye.application 'puma' do
+  uid "{{app_name}}"
+  gid "{{app_name}}"
+  working_dir "{{app_directory}}"
+
+  clear_bundler_env
+  env 'BUNDLE_GEMFILE' => File.join("{{app_directory}}", 'Gemfile')
+  env 'GEM_HOME' => "{{gem_home_path}}"
+  env 'PATH'  => "./bin:#{ENV['PATH']}"
+
+  env 'RAILS_ENV'  => "{{app_environment}}"
+  env 'RAILS_MASTER_KEY'  => "{{app_rails_secret_key}}"
+
+  process('puma-main') do
+    pid_file "{{app_pids_directory}}/puma.pid"
+    stdall "{{eye_logs_directory}}/puma.log"
+
+    start_command "bin/puma -C {{puma_config_file}}"
+    stop_signals [:QUIT, 30.seconds, :TERM, 15.seconds, :KILL]
+    restart_command "kill -HUP {PID}"
+    daemonize true
+  end
+end
+
+

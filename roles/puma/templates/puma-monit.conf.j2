@@ -1,0 +1,5 @@
+check process puma with pidfile {{app_pids_directory}}/puma.pid
+  start program = "{{rvm_home}}/bin/rvm-shell -c '{{app_bin_directory}}/start_puma.sh'"
+         as uid {{app_user}} and gid {{app_user}}
+  stop  program = "/bin/bash -c '/bin/kill -9 `/bin/cat {{app_pids_directory}}/puma.pid`'"
+         as uid {{app_user}} and gid {{app_user}}

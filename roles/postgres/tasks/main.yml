@@ -1,0 +1,76 @@
+- name: Add PostgreSQL repository key
+  become: yes
+  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+
+- name: Add PostgreSQL packages
+  become: yes
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ {{ansible_lsb.codename}}-pgdg main
+    state: present
+
+- name: Install PostgreSQL
+  become: yes
+  apt:
+    name: "{{item}}-{{postgresql_version}}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - postgresql
+    - postgresql-contrib
+
+- name: Install dependencies for the Ansible module
+  become: yes
+  apt:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - python-psycopg2
+
+- name: Create database and user
+  become: yes
+  become_user: postgres
+  block:
+    - name: Create database
+      postgresql_db: name={{database_name}}
+
+    - name: Ensure user has access to database
+      postgresql_user: db={{database_name}} name={{database_user}} password={{database_password}} priv=ALL
+
+    - name: Ensure no other user can access the database
+      postgresql_privs: db={{database_name}} role=PUBLIC type=database priv=ALL state=absent
+
+- name: Enable access to db from app servers
+  become: true
+  ufw:
+    rule: allow
+    port: 5432
+    src: '{{ item }}'
+  with_items: "{{groups.www}}"
+
+- name: Change listen_addresses to '*'
+  lineinfile: dest=/etc/postgresql/{{postgresql_version}}/main/postgresql.conf regexp='^#?listen_addresses\s*=' line="listen_addresses = '*'" state=present backup=yes
+  become: true
+  notify: restart postgresql
+
+- name: Configure pg_hba.conf
+  become: true
+  template:
+    src: pg_hba.conf.j2
+    dest: /etc/postgresql/{{postgresql_version}}/main/pg_hba.conf
+  notify: restart postgresql
+
+- name: Copy postgresql monit config
+  become: true
+  template:
+    src: postgresql-monit.conf.j2
+    dest: "{{monit_directory}}/conf-available/postgresql.conf"
+  notify: reload monit
+
+- name: Ensure postgresql monit is enabled
+  become: true
+  file:
+    src: "{{monit_directory}}/conf-available/postgresql.conf"
+    dest: "{{monit_directory}}/conf-enabled/postgresql.conf"
+    state: link
+  notify: reload monit

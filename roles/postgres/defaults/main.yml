@@ -1,0 +1,4 @@
+database_name: "unnamed_database"
+database_user: "unnamed_database_user"
+database_password: "somedummypasswo"
+postgresql_version: 9.6

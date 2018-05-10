@@ -1,0 +1,15 @@
+#!/bin/bash
+
+source /etc/profile
+source {{app_user_home}}/.bash_profile
+source {{app_user_home}}/.profile
+
+export HOME="{{app_user_home}}"
+export GEM_HOME="{{gem_home_path}}"
+export BUNDLE_GEMFILE="{{app_directory}}/Gemfile"
+export PATH="./bin:$PATH"
+export RAILS_ENV="{{app_environment}}"
+export RAILS_MASTER_KEY="{{app_rails_secret_key}}"
+
+cd {{app_directory}}
+./bin/puma -C {{puma_config_file}}

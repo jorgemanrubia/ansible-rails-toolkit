@@ -1,0 +1,13 @@
+- name: make sure nginx is started before restarting it
+  become: true
+  monit:
+    name: nginx
+    state: started
+  listen: restart nginx
+
+- name: do restart nginx
+  become: true
+  monit:
+    name: nginx
+    state: restarted
+  listen: restart nginx

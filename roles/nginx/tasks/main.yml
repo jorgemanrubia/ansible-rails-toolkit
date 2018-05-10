@@ -1,0 +1,74 @@
+- block:
+#  - service:
+#    name: nginx
+#    state: stopped
+#
+  - name: Install Nginx
+    apt: "pkg={{ item }} state=present"
+    update_cache: true
+    with_items:
+     - nginx-extras
+    notify: reload monit # place "reload monit" first
+
+  - name: Make sure nginx is stopped since we are going to manage with monit
+    service:
+      name: nginx
+      enabled: false
+      state: stopped
+
+  - name: Copy nginx monit config
+    template:
+      src: nginx-monit.conf.j2
+      dest: "{{monit_directory}}/conf-available/nginx.conf"
+    notify: reload monit
+
+  - name: Ensure nginx monit is enabled
+    file:
+      src: "{{monit_directory}}/conf-available/nginx.conf"
+      dest: "{{monit_directory}}/conf-enabled/nginx.conf"
+      state: link
+    notify: reload monit
+
+  - name: Copy Nginx configuration into place.
+    template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+    notify: restart nginx
+
+  - name: Configure puma virtual host.
+    template:
+      src: puma-nginx.j2
+      dest: /etc/nginx/sites-available/puma
+    notify: restart nginx
+
+  - name: Ensure puma virtual host is enabled.
+    file:
+      src: /etc/nginx/sites-available/puma
+      dest: /etc/nginx/sites-enabled/puma
+      state: link
+    notify: restart nginx
+
+  - name: Ensure default virtual host is removed.
+    file:
+      path: /etc/nginx/sites-enabled/default
+      state: absent
+    notify: restart nginx
+
+  - name: Disable the default site
+    file:
+      path: "{{item}}"
+      state: absent
+    notify: restart nginx
+    with_items:
+      - /etc/nginx/sites-enabled/default
+      - /etc/nginx/sites-available/default
+
+  - name: Open port 80
+    become: true
+    ufw:
+      rule: allow
+      port: 80
+
+
+
+  become: true

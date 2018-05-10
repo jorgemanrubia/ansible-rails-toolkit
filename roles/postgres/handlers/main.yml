@@ -1,0 +1,5 @@
+- name: restart postgresql
+  become: true
+  monit:
+    name: postgresql
+    state: restarted

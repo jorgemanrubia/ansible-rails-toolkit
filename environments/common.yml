@@ -1,0 +1,25 @@
+# App
+app_name: myapp
+app_git_repository: "git@github.com:jorgemanrubia/myapp.git"
+
+# Directories
+app_user: "{{app_name}}"
+app_user_home: "/home/{{app_name}}"
+app_base_directory: "{{app_user_home}}"
+app_directory: "{{app_base_directory}}/current"
+app_shared_directory: "{{app_base_directory}}/shared"
+app_pids_directory: "{{app_shared_directory}}/pids"
+app_logs_directory: "{{app_shared_directory}}/log"
+app_tmp_directory: "{{app_shared_directory}}/tmp"
+app_bin_directory: "{{app_shared_directory}}/bin"
+
+# Database
+database_name: "{{app_name}}"
+database_user: "{{app_name}}"
+database_password: "{{vault_database_password}}"
+
+# Ruby
+ruby_version: "2.5"
+
+# Provisioning
+provisioned_servers:

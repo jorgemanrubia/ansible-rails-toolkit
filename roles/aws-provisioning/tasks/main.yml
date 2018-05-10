@@ -1,0 +1,158 @@
+# VPC
+- name:               Create VPC
+  ec2_vpc_net:
+    name:             "{{ vpc_name }}"
+    cidr_block:       "{{ vpc_cidr_block }}"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    state:            "present"
+  register: my_vpc
+
+- name:               Set VPC ID in variable
+  set_fact:
+    vpc_id:           "{{ my_vpc.vpc.id }}"
+
+# Public subnet
+- name:               Create Public Subnet
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "{{ public_subnet_1_cidr }}"
+    az:               "{{ aws_region }}a"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    resource_tags:
+      Name:           "Public Subnet"
+  register: my_public_subnet
+
+- name:               Set Public Subnet ID in variable
+  set_fact:
+    public_subnet_id: "{{ my_public_subnet.subnet.id }}"
+
+# Internet Gateway
+
+- name:               Create Internet Gateway for VPC
+  ec2_vpc_igw:
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    state:            "present"
+  register: my_vpc_igw
+
+- name:               Set Internet Gateway ID in variable
+  set_fact:
+    igw_id:           "{{ my_vpc_igw.gateway_id }}"
+
+- name:               Set up public subnet route table
+  ec2_vpc_route_table:
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    tags:
+      Name:           "Public"
+    subnets:
+      - "{{ public_subnet_id }}"
+    routes:
+      - dest:         "0.0.0.0/0"
+        gateway_id:   "{{ igw_id }}"
+
+# Security groups
+- name:               Create security groups
+  ec2_group:
+    name:             "{{item.name}}"
+    description:      "{{item.name}}"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    rules:
+      - proto:        "{{item.protocol}}"
+        from_port:    "{{item.port}}"
+        to_port:      "{{item.port}}"
+        cidr_ip: 0.0.0.0/0
+  with_items: '{{aws_security_groups}}'
+
+-   name: Create an EC2 key
+    ec2_key:
+      aws_access_key:   "{{ aws_access_key }}"
+      aws_secret_key:   "{{ aws_secret_key }}"
+      name: "{{ app_name }}-{{ app_environment }}-key"
+      region: "{{ aws_region }}"
+    register: ec2_key
+
+-   name: save private key
+    copy: content="{{ ec2_key.key.private_key }}" dest="./aws-{{ app_environment }}-private.pem" mode=0600
+    when: ec2_key.changed
+
+- name: 'Provision ec2 instances'
+  ec2:
+    aws_access_key: "{{aws_access_key}}"
+    aws_secret_key: "{{aws_secret_key}}"
+    key_name: "{{ app_name }}-{{ app_environment }}-key"
+    group: '{{item.value.security_groups}}'
+    region: '{{aws_region}}'
+    instance_type: '{{item.value.type}}'
+    image: "{{aws_image}}"
+    exact_count: "{{item.value.count}}"
+    vpc_subnet_id: '{{public_subnet_id}}'
+    count_tag: "{{item.value.tags}}"
+    instance_tags: "{{item.value.tags | combine({'environment': app_environment}) | combine({'Name': (app_environment + '-' + item.key)})}}"
+    assign_public_ip: true
+    wait: true
+  register: "ec2"
+  with_dict: "{{provisioned_servers}}"
+
+- name: Wait for instance to come up
+  local_action: wait_for
+                host={{ item.1.public_ip }}
+                port=22
+                state=started
+  when: item.1.public_ip is defined
+  with_subelements:
+    - "{{ ec2.results }}"
+    - 'tagged_instances'
+
+- name: Add nginx instances to group
+  add_host:
+    name: "{{ item.1.public_ip }}"
+    groups: nginx
+  when: '"nginx" in item.1.tags'
+  with_subelements:
+    - "{{ ec2.results }}"
+    - 'tagged_instances'
+
+- name: Add db instances to group
+  add_host:
+    name: "{{ item.1.public_ip }}"
+    groups: db
+  when: '"db" in item.1.tags'
+  with_subelements:
+    - "{{ ec2.results }}"
+    - 'tagged_instances'
+
+- name: Add www instances to group
+  add_host:
+    name: "{{ item.1.public_ip }}"
+    groups: www
+  when: '"www" in item.1.tags'
+  with_subelements:
+    - "{{ ec2.results }}"
+    - 'tagged_instances'
+
+- name: Allocating elastic IP to instance
+  ec2_eip:
+    aws_access_key:   "{{ aws_access_key }}"
+    aws_secret_key:   "{{ aws_secret_key }}"
+    in_vpc: yes
+    reuse_existing_ip_allowed: yes
+    state: present
+    region: "{{ aws_region }}"
+    device_id: "{{ item.1.id }}"
+  when: '"nginx" in item.1.tags'
+  with_subelements:
+    - "{{ ec2.results }}"
+    - 'tagged_instances'

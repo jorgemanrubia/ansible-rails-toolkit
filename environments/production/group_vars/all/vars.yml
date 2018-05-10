@@ -1,0 +1,33 @@
+app_environment: "production"
+
+provisioned_servers:
+  nginx:
+    count: 1
+    type: t2.micro
+    tags:
+      name: 'nginx'
+      nginx: ''
+      nginx: ''
+    security_groups:
+      - '{{main_security_group}}'
+      - '{{nginx_security_group}}'
+  db:
+    count: 1
+    type: t2.micro
+    tags:
+      name: 'db'
+      db: ''
+    security_groups:
+      - '{{main_security_group}}'
+      - '{{db_security_group}}'
+
+  www:
+    count: 2
+    type: t2.micro
+    tags:
+      name: 'www'
+      www: ''
+    security_groups:
+      - '{{main_security_group}}'
+      - '{{www_security_group}}'
+

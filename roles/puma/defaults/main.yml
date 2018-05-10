@@ -1,0 +1,5 @@
+puma_workers: "{{ ansible_processor_vcpus | default(ansible_processor_count) }}"
+puma_threads: 5
+puma_config_dir: "/etc/puma"
+puma_config_file: "{{puma_config_dir}}/puma.rb"
+puma_port: 3000

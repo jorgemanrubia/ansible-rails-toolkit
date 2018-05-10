@@ -1,0 +1,18 @@
+aws_region:     "us-east-1"
+aws_image: "ami-66506c1c"
+vpc_name:       "My VPC"
+vpc_cidr_block: "10.0.0.0/16"
+
+public_subnet_1_cidr:  "10.0.0.0/24"
+
+
+main_security_group: '{{app_name}}-main-security-group'
+nginx_security_group: '{{app_name}}-nginx-security-group'
+db_security_group: '{{app_name}}-db-security-group'
+www_security_group: '{{app_name}}-www-security-group'
+
+aws_security_groups:
+  - {name: '{{main_security_group}}', protocol: 'tcp', port: '22'}
+  - {name: '{{app_name}}-nginx-security-group', protocol: 'tcp', port: '80'}
+  - {name: '{{app_name}}-www-security-group', protocol: 'tcp', port: '3000'}
+  - {name: '{{app_name}}-db-security-group', protocol: 'all', port: '5432'}

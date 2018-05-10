@@ -1,0 +1,9 @@
+- hosts: www
+  roles:
+     - deploy
+  handlers:
+     # Not defining a role dependency because we don't want to execute nginx tasks
+     # workaround, see roles/.../handlers/part.yml
+     - include: 'roles/puma/handlers/main.yml'
+
+

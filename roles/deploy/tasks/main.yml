@@ -1,0 +1,76 @@
+- name: Include vars for dependencies
+  include_vars:
+    file: "{{item}}"
+  with_items:
+    - '../ruby/defaults/main.yml'
+    - '../puma/defaults/main.yml'
+- block:
+  - name: Checkout the latest version
+    git:
+      accept_hostkey: true
+      repo: "{{app_git_repository}}"
+      dest: "{{ app_directory }}"
+      accept_hostkey: true
+      version: master
+      force: yes
+      #      key_file: '{{app_user_home}}/.ssh/id_rsa.pub'
+    register: app_updated
+    notify: restart puma
+
+  - name: 'Add .env to app'
+    become: true
+    template:
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      src: .env.j2
+      dest: "{{app_directory}}/.env"
+    notify: restart puma
+
+  - name: Remove the shared dirs from source
+    file:
+      path: "{{app_directory}}/{{item}}"
+      state: absent
+    with_items: '{{deploy_shared_dirs}}'
+
+  - name: Link shared dirs
+    become: true
+    file:
+      src: "{{app_shared_directory}}/{{item}}"
+      dest: "{{app_directory}}/{{item}}"
+      state: link
+      force: true
+    with_items: '{{deploy_shared_dirs}}'
+
+  - name: Install required dependencies with bundler.
+    bundler:
+      state: present
+      chdir: "{{app_directory}}"
+      user_install: true
+      exclude_groups: 'test'
+    notify: restart puma
+
+  - name: Yarn install
+    shell: "bin/yarn install"
+    args:
+      chdir: "{{app_directory}}"
+    when: app_updated.changed == true
+    notify: restart puma
+
+  - name: Run migrations
+    shell: 'bin/rails db:migrate'
+    args:
+      chdir: "{{app_directory}}"
+    when: (app_updated.changed == true) and (inventory_hostname == groups.www[0]) # only run migrations in 1 node
+    notify: restart puma
+
+  - name: Compile assets
+    shell: 'bin/rails assets:precompile'
+    args:
+      chdir: "{{app_directory}}"
+    when: app_updated.changed == true
+    notify: restart puma
+
+  remote_user: "{{app_user}}"
+  environment: "{{ruby_environment | combine(rails_environment)}}"
+  vars:
+    ansible_user: "{{app_user}}"

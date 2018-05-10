@@ -1,0 +1,64 @@
+- name: Create groups
+  become: true
+  group:
+    name: "{{item}}"
+    state: present
+  with_items: "{{users}}"
+
+- name: Allow admin group with passwordless sudo
+  become: true
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%{{item}}'
+    line: '%{{item}} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+  with_items: "{{users}}"
+
+- name: Create users
+  become: true
+  user:
+    name: "{{item}}"
+    groups: "{{item}}"
+    append: yes
+    state: present
+    shell: /bin/bash
+    createhome: yes
+  with_items: "{{users}}"
+
+- name: 'Create .ssh directory for {{app_user}}'
+  become: true
+  file:
+    path: "{{app_user_home}}/.ssh"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: 0755
+
+- name: 'Create the SSH public key file for {{app_user}}'
+  become: true
+  copy:
+    content: "{{ app_user_ssh_public_key }}"
+    dest: "{{app_user_home}}/.ssh/id_rsa.pub"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: 0644
+
+- name: 'Copy authorized hosts'
+  become: true
+  template:
+    src: authorized_keys.j2
+    dest: '{{app_user_home}}/.ssh/authorized_keys'
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: 0644
+
+- name: 'Create the SSH private key file for {{app_user}}'
+  become: true
+  copy:
+    content: "{{ app_user_ssh_private_key }}"
+    dest: "{{app_user_home}}/.ssh/id_rsa"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: 0600
+

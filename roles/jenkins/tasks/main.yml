@@ -1,0 +1,35 @@
+- name: Add jenkins repository key
+  become: yes
+  apt_key: url=https://pkg.jenkins.io/debian/jenkins-ci.org.key state=present
+
+- name: Add jenkins packages
+  become: yes
+  apt_repository:
+    repo: deb https://pkg.jenkins.io/debian-stable binary/
+    state: present
+
+- name: Install Jenkins
+  become: yes
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  with_items:
+    - jenkins
+
+- name: Start jenkins
+  become: true
+  service:
+    name: jenkins
+    enabled: true
+    state: started
+
+- name: Configure open ports for jenkins
+  become: true
+  ufw:
+    rule: "{{item.rule}}"
+    port: "{{item.port}}"
+    proto: "{{item.proto}}"
+  with_items:
+    - {rule: 'allow', port: 8080, proto: 'any'}

@@ -1,0 +1,22 @@
+- hosts: all
+  roles:
+    - users
+    - common
+    - monit
+
+- hosts: nginx
+  roles:
+    - nginx
+
+- hosts: db
+  roles:
+    - postgres
+
+- hosts: www
+  roles:
+    - ruby
+    - www
+    - git
+    - puma
+
+

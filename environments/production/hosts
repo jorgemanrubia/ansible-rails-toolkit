@@ -1,0 +1,12 @@
+[all:vars]
+ansible_user=ubuntu
+
+[nginx:children]
+tag_nginx
+
+[db:children]
+tag_db
+
+[www:children]
+tag_www
+

@@ -1,0 +1,6 @@
+deploy_shared_dirs:
+  - tmp
+  - log
+rails_environment:
+  RAILS_ENV: '{{app_environment}}'
+  RAILS_MASTER_KEY: '{{app_rails_secret_key}}'

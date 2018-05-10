@@ -1,0 +1,20 @@
+- name: Install monit
+  become: true
+  apt:
+    name: "monit"
+    state: present
+
+- name: Start monit and make sure it loads on reboots
+  become: true
+  service:
+    name: monit
+    enabled: true
+    state: started
+
+- name: Copy nginx base config
+  become: true
+  template:
+    src: base.conf.j2
+    dest: "{{monit_directory}}/conf.d/base.conf"
+  notify: reload monit
+

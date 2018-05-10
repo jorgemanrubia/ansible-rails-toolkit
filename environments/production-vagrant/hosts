@@ -1,0 +1,16 @@
+[all:vars]
+ansible_user=vagrant
+private_key_file=/.vagrant.d/insecure_private_key
+
+[nginx]
+192.168.3.2
+
+[www]
+192.168.3.2
+
+[db]
+192.168.3.2
+
+[jenkins]
+192.168.3.20
+

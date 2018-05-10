@@ -1,0 +1,5 @@
+- name: restart puma
+  become: true
+  monit:
+    name: puma
+    state: restarted

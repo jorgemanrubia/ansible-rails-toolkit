@@ -1,0 +1,17 @@
+# IMPORTANT: You should encrypt this file with ansible-vault
+#
+#   ansible-vault encrypt environments/common-vault.yml
+#
+app_user_ssh_private_key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  your ssh private key
+  -----END RSA PRIVATE KEY-----
+
+app_user_ssh_public_key: |
+  your ssh public key
+
+app_rails_secret_key: 'your rails secret key'
+
+aws_access_key: "your aws access key"
+aws_secret_key: "your aws secret key"
+~

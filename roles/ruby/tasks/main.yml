@@ -1,0 +1,12 @@
+- name: Install Ruby
+  include_role:
+    name: rvm_io.ruby
+  vars:
+    tags: ruby
+    remote_user: "{{app_user}}"
+
+    rvm1_rubies: ['ruby-{{ruby_version}} ']
+    rvm1_install_flags: '--auto-dotfiles --user-install'
+    rvm1_install_path: '{{app_user_home}}/.rvm'
+    rvm1_user: '{{app_user}}'
+

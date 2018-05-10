@@ -1,0 +1,6 @@
+app_user: "{{app_name}}"
+app_user_home: "/home/{{app_user}}"
+
+users:
+ - "{{app_user}}"
+

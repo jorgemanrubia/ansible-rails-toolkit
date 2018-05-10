@@ -1,0 +1,9 @@
+- hosts: jenkins
+  roles:
+    - users
+    - ruby
+    - www
+    - git
+    - common
+    - jenkins
+

@@ -1,0 +1,11 @@
+ruby_version: 2.5.0
+# workaround for running eye as a sudo user
+rvm_home: '{{app_user_home}}/.rvm'
+gem_home_path: "{{rvm_home}}/gems/ruby-{{ruby_version}}"
+ruby_environment:
+  PATH: "./bin:{{ ansible_env.PATH }}:{{rvm_home}}/bin:{{rvm_home}}/gems/ruby-{{ruby_version}}/bin:{{rvm_home}}/rubies/ruby-{{ruby_version}}/bin"
+  rvmsudo_secure_path: 1
+  GEM_HOME: "{{gem_home_path}}"
+  GEM_PATH: '{{gem_home_path}}:{{rvm_home}}/gems/ruby-{{ruby_version}}@global'
+
+

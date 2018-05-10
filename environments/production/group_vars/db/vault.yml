@@ -1,0 +1,5 @@
+# IMPORTANT: You should encrypt this file with ansible-vault
+#
+#   ansible-vault encrypt environments/production/db/vault.yml
+#
+ault_database_password: 'your production (vagrant) db password'

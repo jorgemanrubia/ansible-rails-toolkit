@@ -1,0 +1,36 @@
+- block:
+  - name: Create directories for puma config
+    file:
+      path: '{{puma_config_dir}}'
+      state: directory
+    notify: reload monit # place "reload monit" first
+
+  - name: Copy start_puma script to invoke from monit
+    template:
+      src: start_puma.sh.j2
+      dest: "{{app_bin_directory}}/start_puma.sh"
+      owner: "{{ app_user }}"
+      group: "{{ app_user }}"
+      mode: "u=rwx,g=r,o=r"
+    notify: reload monit
+
+  - name: Copy puma configuration into place.
+    template:
+      src: puma.rb.j2
+      dest: "{{puma_config_file}}"
+    notify: restart puma
+
+  - name: Copy puma monit config
+    template:
+      src: puma-monit.conf.j2
+      dest: "{{monit_directory}}/conf-available/puma.conf"
+    notify: reload monit
+
+  - name: Ensure puma monit is enabled
+    file:
+      src: "{{monit_directory}}/conf-available/puma.conf"
+      dest: "{{monit_directory}}/conf-enabled/puma.conf"
+      state: link
+    notify: reload monit
+
+  become: true
