@@ -18,6 +18,8 @@ It includes 2 environments:
 
 It would be pretty trivial to add other environments such as staging. Just copy an existing environment and tweak it.
 
+Notice there are some files that are soft links to avoid duplication. For example: `environments/production/group_vars/all/00-common.yml` → `environments/common.yml`
+
 ### Usage
 
 #### Configure app variables
