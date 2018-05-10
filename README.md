@@ -7,7 +7,7 @@ The system will configure:
 - A Postgres instance
 - An instance with [Nginx](https://www.nginx.com) acting as a load balancer for the web servers
 - A number of web servers with puma
-- [Jenkins](https://jenkins.io) instance
+- A [Jenkins](https://jenkins.io) instance
 
 It also includes a playbook for deploying to different environments using Ansible (without using Capistrano or any other third-party system).
 
@@ -35,7 +35,7 @@ The system assumes that you have a file in `~/ vault_password.txt` containing yo
 
 #### Configure your EC2 servers
 
-You can edit `environments/production-vagrant/group_vars/all/vars.yml` to configure your EC2 nodes. Example: the type and number of instances you want to use.
+Edit `environments/production-vagrant/group_vars/all/vars.yml` to configure your EC2 nodes. Example: the type and number of instances you want to use.
 
 #### Provision instances
 
