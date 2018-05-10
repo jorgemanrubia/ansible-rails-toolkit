@@ -94,3 +94,8 @@ ansible-playbook -i environments/production-vagrant deploy.yml
 ansible-playbook -i environments/production services.yml
 ```
 
+### Credits
+
+- [I learned Ansible (and many other basic devops concepts) using this book which I totally recommend](https://www.amazon.com/Ansible-DevOps-Server-configuration-management/dp/098639341X/ref=sr_1_3?s=books&ie=UTF8&qid=1525986349&sr=1-3&keywords=ansible)
+- I also learned a lot by reading the code of the many Ansible roles created by [Jeff Geerling (the book author)](https://github.com/geerlingguy)
+- [I used the approach proposed in this article for managing multiple environments](https://www.digitalocean.com/community/tutorials/how-to-manage-multistage-environments-with-ansible)
