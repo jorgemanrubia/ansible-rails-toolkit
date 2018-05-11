@@ -22,7 +22,7 @@ Notice there are some files that are soft links to avoid duplication. For exampl
 
 ### Usage
 
-#### Install requirements
+#### Install dependencies
 
 ```
 ansible-galaxy install -r requirements.yml
