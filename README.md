@@ -22,6 +22,12 @@ Notice there are some files that are soft links to avoid duplication. For exampl
 
 ### Usage
 
+#### Install requirements
+
+```
+ansible-galaxy install -r requirements.yml
+```
+
 #### Configure app variables
 
 You can configure basic properties such as your app name and git repo in `environments/common.yml`.
